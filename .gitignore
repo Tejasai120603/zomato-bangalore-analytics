@@ -1,0 +1,15 @@
+# Data files (>100MB exceeds GitHub push limits)
+*.csv
+zomato.csv
+
+# OS and Editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+.vscode/
+.idea/
+
+# Environment & dependencies
+node_modules/
+.env

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Zomato Bangalore Restaurant Analytics — A warm, editorial exploration of 51,717 restaurants across the city." />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" id="metaThemeColor" content="#f0ebe3" />
+  <title>Zomato Bangalore · Restaurant Analytics</title>
+
+  <!-- Theme bootstrap: runs before first paint so there is no light→dark flash.
+       A saved choice wins; otherwise follow the OS preference. -->
+  <script>
+    (function () {
+      var theme = 'light';
+      try {
+        var saved = localStorage.getItem('zomato-analytics-theme');
+        if (saved === 'light' || saved === 'dark') theme = saved;
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+      } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <!-- Fonts: Lora (editorial serif) + DM Sans (humanist sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Icon sprite for the theme toggle -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </g>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <!-- Warm texture overlay -->
+  <div class="paper-texture" aria-hidden="true"></div>
+
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-mark" aria-hidden="true">Z</div>
+        <div class="logo-text">
+          <div class="logo-title">Zomato Analytics</div>
+          <div class="logo-sub">Bangalore · 51,717 Restaurants</div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" id="navTabs" role="navigation" aria-label="Dashboard sections">
+        <button class="nav-tab active" data-section="overview"  id="tab-overview">Overview</button>
+        <button class="nav-tab"        data-section="ratings"   id="tab-ratings">Ratings</button>
+        <button class="nav-tab"        data-section="cuisine"   id="tab-cuisine">Cuisine</button>
+        <button class="nav-tab"        data-section="location"  id="tab-location">Location</button>
+        <button class="nav-tab"        data-section="cost"      id="tab-cost">Cost</button>
+        <button class="nav-tab"        data-section="insights"  id="tab-insights">Insights</button>
+      </nav>
+
+      <!-- Light / dark switch -->
+      <button class="theme-toggle" id="themeToggle" type="button" role="switch"
+              aria-checked="false" aria-label="Dark mode" title="Switch to dark mode">
+        <span class="tt-icon tt-sun" aria-hidden="true"><svg><use href="#icon-sun"/></svg></span>
+        <span class="tt-icon tt-moon" aria-hidden="true"><svg><use href="#icon-moon"/></svg></span>
+        <span class="theme-toggle-thumb" aria-hidden="true">
+          <svg class="thumb-sun"><use href="#icon-sun"/></svg>
+          <svg class="thumb-moon"><use href="#icon-moon"/></svg>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main" id="mainContent">
+
+    <!-- ════════════════ OVERVIEW ════════════════ -->
+    <section class="section active" id="section-overview" aria-labelledby="title-overview">
+
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Overview</div>
+        <h1 class="section-title" id="title-overview">Bangalore's Dining Scene</h1>
+        <p class="section-sub">An editorial look at 51,717 restaurants — from street-side dhabas to fine dining rooms.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-terracotta">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#127978;</div>
+            <div class="kpi-data">
+              <div class="kpi-value counter" data-target="51717">0</div>
+              <div class="kpi-label">Total Restaurants</div>
+            </div>
+          </div>
+          <div class="kpi-tag">Bangalore's foodscape</div>
+        </div>
+        <div class="kpi-card kpi-ochre">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#11088;</div>
+            <div class="kpi-data">
+              <div class="kpi-value">3.7</div>
+              <div class="kpi-label">Average Rating</div>
+            </div>
+          </div>
+          <div class="kpi-tag">Out of 5.0</div>
+        </div>
+        <div class="kpi-card kpi-sage">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#128241;</div>
+            <div class="kpi-data">
+              <div class="kpi-value">58.9%</div>
+              <div class="kpi-label">Online Ordering</div>
+            </div>
+          </div>
+          <div class="kpi-tag">Accept digital orders</div>
+        </div>
+        <div class="kpi-card kpi-gold">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#8377;</div>
+            <div class="kpi-data">
+              <div class="kpi-value">555</div>
+              <div class="kpi-label">Avg Cost for Two</div>
+            </div>
+          </div>
+          <div class="kpi-tag">&#8377;40 – &#8377;6,000 range</div>
+        </div>
+        <div class="kpi-card kpi-rose">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#128203;</div>
+            <div class="kpi-data">
+              <div class="kpi-value counter" data-target="284">0</div>
+              <div class="kpi-label">Avg Votes / Restaurant</div>
+            </div>
+          </div>
+          <div class="kpi-tag">Community engagement</div>
+        </div>
+        <div class="kpi-card kpi-slate">
+          <div class="kpi-inner">
+            <div class="kpi-icon-wrap">&#128205;</div>
+            <div class="kpi-data">
+              <div class="kpi-value counter" data-target="93">0</div>
+              <div class="kpi-label">Unique Locations</div>
+            </div>
+          </div>
+          <div class="kpi-tag">Neighbourhoods covered</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card wide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Listing Type</div>
+              <h2 class="chart-title">How restaurants are listed</h2>
+            </div>
+            <span class="chart-pill">7 categories</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartListingType" height="260"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Ordering Mode</div>
+              <h2 class="chart-title">Online Orders</h2>
+            </div>
+          </div>
+          <div class="chart-wrap donut-wrap">
+            <canvas id="chartOnlineOrder"></canvas>
+            <div class="donut-center">
+              <div class="donut-val">58.9%</div>
+              <div class="donut-lbl">Online</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Reservations</div>
+              <h2 class="chart-title">Table Booking</h2>
+            </div>
+          </div>
+          <div class="chart-wrap donut-wrap">
+            <canvas id="chartBookTable"></canvas>
+            <div class="donut-center">
+              <div class="donut-val">12.5%</div>
+              <div class="donut-lbl">Accept</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ RATINGS ════════════════ -->
+    <section class="section" id="section-ratings" aria-labelledby="title-ratings">
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Ratings</div>
+        <h1 class="section-title" id="title-ratings">How Diners Rate Bangalore</h1>
+        <p class="section-sub">Rating patterns across 41,665 restaurants that have received diner feedback.</p>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card xlwide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Distribution</div>
+              <h2 class="chart-title">Rating spread across all restaurants</h2>
+            </div>
+            <span class="chart-pill">41,665 rated</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartRatingDist" height="260"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Breakdown</div>
+              <h2 class="chart-title">By star rating</h2>
+            </div>
+          </div>
+          <div class="rating-breakdown" id="ratingBreakdown"></div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card wide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Service Format</div>
+              <h2 class="chart-title">Top restaurant types by count</h2>
+            </div>
+            <span class="chart-pill">Top 10</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartTypeRating" height="260"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Quality Tiers</div>
+              <h2 class="chart-title">Rating tiers</h2>
+            </div>
+          </div>
+          <div class="tier-list" id="tierList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ CUISINE ════════════════ -->
+    <section class="section" id="section-cuisine" aria-labelledby="title-cuisine">
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Cuisine</div>
+        <h1 class="section-title" id="title-cuisine">What the City is Eating</h1>
+        <p class="section-sub">Cuisine preferences mapped across Bangalore's vast restaurant ecosystem.</p>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card xlwide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Cuisine Count</div>
+              <h2 class="chart-title">Top 20 cuisines by restaurant count</h2>
+            </div>
+            <span class="chart-pill">70+ cuisine types</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartCuisines" height="300"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Format Mix</div>
+              <h2 class="chart-title">Restaurant types</h2>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="chartRestTypes" height="300"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Visual Index</div>
+              <h2 class="chart-title">Cuisine popularity — at a glance</h2>
+            </div>
+          </div>
+          <div class="cuisine-grid" id="cuisineGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ LOCATION ════════════════ -->
+    <section class="section" id="section-location" aria-labelledby="title-location">
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Location</div>
+        <h1 class="section-title" id="title-location">Where the Food Is</h1>
+        <p class="section-sub">Restaurant density mapped across 93 distinct Bangalore neighbourhoods.</p>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card xlwide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Neighbourhood Density</div>
+              <h2 class="chart-title">Top 20 locations by restaurant count</h2>
+            </div>
+            <span class="chart-pill">93 areas total</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartLocations" height="300"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Rankings</div>
+              <h2 class="chart-title">Location leaderboard</h2>
+            </div>
+          </div>
+          <div class="leaderboard" id="locationLeaderboard"></div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Density Map</div>
+              <h2 class="chart-title">Neighbourhood heatmap — restaurant concentration</h2>
+            </div>
+          </div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ COST ════════════════ -->
+    <section class="section" id="section-cost" aria-labelledby="title-cost">
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Cost</div>
+        <h1 class="section-title" id="title-cost">What Dining Costs Here</h1>
+        <p class="section-sub">Affordability, price segments, and average spend across restaurant categories.</p>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card xlwide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Price Distribution</div>
+              <h2 class="chart-title">Cost ranges for a meal for two</h2>
+            </div>
+            <span class="chart-pill">&#8377;40 – &#8377;6,000</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartCostDist" height="260"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Segments</div>
+              <h2 class="chart-title">Price segments</h2>
+            </div>
+          </div>
+          <div class="segment-list" id="segmentList"></div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card wide">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Category Spend</div>
+              <h2 class="chart-title">Average cost by restaurant type</h2>
+            </div>
+            <span class="chart-pill">Avg for two people</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartCostType" height="260"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Summary</div>
+              <h2 class="chart-title">Value metrics</h2>
+            </div>
+          </div>
+          <div class="value-stats" id="valueStats"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ INSIGHTS ════════════════ -->
+    <section class="section" id="section-insights" aria-labelledby="title-insights">
+      <div class="section-header">
+        <div class="section-eyebrow">Dashboard · Insights</div>
+        <h1 class="section-title" id="title-insights">What the Data Tells Us</h1>
+        <p class="section-sub">Eight human stories drawn from the numbers behind Bangalore's restaurant scene.</p>
+      </div>
+      <div class="insights-grid" id="insightsGrid"></div>
+      <div class="chart-row" style="margin-top:2.5rem">
+        <div class="chart-card full-width">
+          <div class="chart-header">
+            <div>
+              <div class="chart-eyebrow">Complete Reference</div>
+              <h2 class="chart-title">Dataset summary</h2>
+            </div>
+          </div>
+          <div class="summary-table" id="summaryTable"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="scroll-top" id="scrollTop" aria-label="Back to top" title="Scroll to top">&#8679;</button>
+
+  <script src="app.js"></script>
+</body>
+</html>
